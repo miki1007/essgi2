@@ -19,10 +19,12 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomePage(),
-        '/new-request': (context) => const NewRequestPage(),
-        '/history': (context) => const HistoryPage(),
-        '/status': (context) => const StatusPage(),
+        '/': (context) => HomePage(
+              toggleTheme: () {},
+            ), // Remove 'const'
+        '/new-request': (context) => NewRequestPage(), // Remove 'const'
+        '/history': (context) => HistoryPage(), // Remove 'const'
+        '/status': (context) => StatusPage(), // Remove 'const'
       },
     );
   }

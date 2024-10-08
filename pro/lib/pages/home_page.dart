@@ -1,307 +1,591 @@
-// ignore_for_file: unused_local_variable
-
 import 'package:flutter/material.dart';
-import 'package:pro/component/my_drawer.dart'; // Your custom drawer
+import 'package:pro/pages/pending_tasks_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final VoidCallback toggleTheme;
+
+  const HomePage({Key? key, required this.toggleTheme}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  // State for Quick Actions buttons
-  Map<String, bool> _quickActionStates = {
-    'New Request': false,
-    'View History': false,
-    'Check Status': false,
-  };
+  // The ongoing image
+  final String ongoingImage = 'assets/img/ongoing.jpeg';
+
+  // Define search history and filtered search results
+  List<String> searchHistory = [
+    "Pending Tasks",
+    "Overall Efficiency",
+    "Ongoing Tasks",
+    "Completed Tasks",
+    "Ticket #123",
+    "Service Request #456",
+  ];
+  List<String> filteredSearchHistory = [];
+  TextEditingController searchController = TextEditingController();
+  bool isSearchHistoryVisible =
+      false; // Track the visibility of the search history
+
+  // New Request Form Fields
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String maintenanceTitle = '';
+  String description = '';
+  String selectedCategory = 'Electrical'; // Default category
+  String urgencyLevel = 'Normal'; // Default urgency
+  DateTime? selectedDate;
+
+  // Technician data for availability
+  final List<Map<String, String>> _technicians = [
+    {'name': 'Technician A', 'status': 'Available'},
+    {'name': 'Technician B', 'status': 'Busy'},
+    {'name': 'Technician C', 'status': 'Available'},
+    {'name': 'Technician D', 'status': 'Busy'},
+    {'name': 'Technician E', 'status': 'Available'},
+  ];
+
+  bool _showAllTechnicians =
+      false; // Flag to control the visibility of all technicians
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the filtered search history
+    filteredSearchHistory = List.from(searchHistory);
+  }
+
+  // Update the filtered search history based on user input
+  void _filterSearchResults(String query) {
+    if (query.isEmpty) {
+      filteredSearchHistory = List.from(searchHistory);
+      isSearchHistoryVisible = false; // Hide search history if query is empty
+    } else {
+      filteredSearchHistory = searchHistory
+          .where(
+              (element) => element.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+      isSearchHistoryVisible = true; // Show search history if there are matches
+    }
+    setState(() {});
+  }
+
+  // Function to close the search history
+  void _closeSearchHistory() {
+    setState(() {
+      isSearchHistoryVisible = false;
+      searchController.clear(); // Clear the search input
+    });
+  }
+
+  // Function to show the request form
+  void _showRequestForm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('New Maintenance Request'),
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField(Icons.title, 'Maintenance Title',
+                      (value) => maintenanceTitle = value),
+                  _buildTextField(Icons.description, 'Description',
+                      (value) => description = value),
+                  _buildDropdownField('Category', selectedCategory, <String>[
+                    'Electrical',
+                    'Plumbing',
+                    'HVAC',
+                    'General Maintenance',
+                    'Landscaping',
+                    'Others'
+                  ], (newValue) {
+                    setState(() {
+                      selectedCategory = newValue!;
+                    });
+                  }),
+                  _buildDropdownField('Urgency Level', urgencyLevel,
+                      <String>['Low', 'Normal', 'High', 'Urgent'], (newValue) {
+                    setState(() {
+                      urgencyLevel = newValue!;
+                    });
+                  }),
+                  SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                      );
+                      if (picked != null && picked != selectedDate) {
+                        setState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
+                    child: Text(
+                      'Select Date: ${selectedDate != null ? "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}" : "Not selected"}',
+                      style: TextStyle(
+                          color: selectedDate != null
+                              ? Colors.black
+                              : Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _showSuccessNotification(); // Show success notification
+                  Navigator.of(context).pop(); // Close the dialog
+                }
+              },
+              child: Text('Submit'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Close dialog
+              child: Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to show success notification
+  void _showSuccessNotification() {
+    final ticketNumber = (1000 + DateTime.now().millisecondsSinceEpoch % 10000)
+        .toString(); // Generate a random ticket number
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Success'),
+          content: Text(
+              'You have successfully requested maintenance on ticket number #$ticketNumber.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Close dialog
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to build text fields with icons
+  Widget _buildTextField(
+      IconData icon, String label, Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(),
+        ),
+        onChanged: onChanged,
+        validator: (value) => value!.isEmpty ? 'Enter a title' : null,
+      ),
+    );
+  }
+
+  // Function to build dropdown fields
+  Widget _buildDropdownField(String label, String currentValue,
+      List<String> items, Function(String?) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: DropdownButtonFormField<String>(
+        value: currentValue,
+        decoration:
+            InputDecoration(labelText: label, border: OutlineInputBorder()),
+        items: items.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Responsive layout
-    final double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
-        title: const Text('Maintenance Dashboard'),
-        foregroundColor: Theme.of(context).colorScheme.primary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {
-              // Open notifications page or dialog
-              _showNotifications();
-            },
-          ),
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 0,
       ),
-      drawer: MyDrawer(),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Section
-            Text(
-              'Welcome to ESSGI Maintenance System',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            ),
-            const SizedBox(height: 10),
-
-            // Dashboard Overview with Horizontal Scrolling
-            _buildDashboardOverview(),
-
-            const SizedBox(height: 20),
-
-            // Quick Actions
-            _buildQuickActions(),
-
-            const SizedBox(height: 20),
-
-            // Technician Availability
-            _buildTechnicianAvailability(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Dashboard Overview Section with Horizontal Scrolling
-  Widget _buildDashboardOverview() {
-    final List<Map<String, dynamic>> dashboardItems = [
-      {
-        'title': 'Ongoing Requests',
-        'icon': Icons.build,
-        'image': 'assets/img/ongoing.jpeg'
-      },
-      {
-        'title': 'Completed Tasks',
-        'icon': Icons.done,
-        'image': 'assets/img/completed.jpeg'
-      },
-      {
-        'title': 'Pending Tasks',
-        'icon': Icons.pending,
-        'image': 'assets/img/pending.jpeg'
-      },
-      {
-        'title': 'Overall Efficiency',
-        'icon': Icons.timeline,
-        'image': 'assets/img/overall.jpeg'
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Dashboard Overview',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 220, // Adjust height as needed for larger boxes
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: dashboardItems.length,
-            itemBuilder: (context, index) {
-              final item = dashboardItems[index];
-              return _buildCard(
-                item['title'],
-                item['icon'],
-                item['image'], // Pass the image file path
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Quick Actions Section with Button Color Change
-  Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildActionButton('New Request', Icons.add_circle_outline, () {
-              // Navigate to New Request Page
-              Navigator.pushNamed(context, '/new-request');
-            }),
-            _buildActionButton('View History', Icons.history, () {
-              // Navigate to View History Page
-              Navigator.pushNamed(context, '/history');
-            }),
-            _buildActionButton('Check Status', Icons.assignment_turned_in, () {
-              // Navigate to Status Page
-              Navigator.pushNamed(context, '/status');
-            }),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Technician Availability Section
-  Widget _buildTechnicianAvailability() {
-    final List<Map<String, String>> technicians = [
-      {'name': 'Technician A', 'status': 'Available'},
-      {'name': 'Technician B', 'status': 'Busy'},
-      {'name': 'Technician C', 'status': 'Available'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Technician Availability',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 10),
-        ListView.builder(
-          shrinkWrap: true,
-          itemCount: technicians.length,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            final tech = technicians[index];
-            return ListTile(
-              leading: Icon(
-                tech['status'] == 'Available'
-                    ? Icons.check_circle
-                    : Icons.cancel,
-                color:
-                    tech['status'] == 'Available' ? Colors.green : Colors.red,
-              ),
-              title: Text(tech['name']!),
-              subtitle: Text(tech['status']!),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  // Build Card for Dashboard Overview with Image Background
-  Widget _buildCard(String title, IconData icon, String imagePath) {
-    return Container(
-      width: 180, // Adjust width for larger boxes
-      margin: const EdgeInsets.only(right: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        image: DecorationImage(
-          image: AssetImage(imagePath),
-          fit: BoxFit.cover,
-          colorFilter:
-              ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
-        ),
-      ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(icon, size: 50, color: Colors.white),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
+            // Header with Ongoing Image
+            Container(
+              height: 250,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(ongoingImage),
+                  fit: BoxFit.cover,
                 ),
-              ],
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 40,
+                    right: 20,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.notifications, color: Colors.white),
+                          onPressed: () {
+                            _showNotificationDrawer(context);
+                          },
+                        ),
+                        SizedBox(width: 10),
+                        IconButton(
+                          icon: Icon(Icons.dark_mode, color: Colors.white),
+                          onPressed: widget.toggleTheme,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+
+            // Search Bar Section
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30.0),
+                      boxShadow: [
+                        BoxShadow(blurRadius: 5, color: Colors.black12)
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search), // Search icon
+                        SizedBox(width: 8.0),
+                        Expanded(
+                          child: TextField(
+                            controller: searchController,
+                            onChanged: _filterSearchResults,
+                            decoration: InputDecoration(
+                              hintText: 'Search services...',
+                              border: InputBorder.none,
+                            ),
+                            onTap: () {
+                              setState(() {
+                                isSearchHistoryVisible = true;
+                              });
+                            },
+                          ),
+                        ),
+                        // Close button to clear search history
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: _closeSearchHistory,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Display Search History
+                  if (isSearchHistoryVisible &&
+                      filteredSearchHistory.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: filteredSearchHistory.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(filteredSearchHistory[index]),
+                                onTap: () {
+                                  searchController.text =
+                                      filteredSearchHistory[index];
+                                  _filterSearchResults(
+                                      filteredSearchHistory[index]);
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Booking Confirmation Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Card(
+                color: Colors.purple.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle_outline, color: Colors.white),
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Your booking is confirmed.',
+                              style: TextStyle(color: Colors.white)),
+                          Text('Filter Replacement',
+                              style: TextStyle(color: Colors.white)),
+                          Text('October 10, 2024 1:59 PM',
+                              style: TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                      Spacer(),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.white),
+                        onPressed: () {
+                          // Handle card dismissal
+                        },
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Categories Section
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Categories',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildCategoryButton(
+                            'Pending Tasks', Icons.hourglass_empty),
+                        _buildCategoryButton(
+                            'Overall Efficiency', Icons.assessment),
+                        _buildCategoryButton(
+                            'Ongoing Tasks', Icons.play_circle),
+                        _buildCategoryButton(
+                            'Completed Tasks', Icons.check_circle),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Technician Availability Section
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Technician Availability',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ListTile(
+                    title: Text(_technicians[0]['name']!),
+                    subtitle: Text(_technicians[0]['status']!),
+                    leading: Icon(
+                      _technicians[0]['status'] == 'Available'
+                          ? Icons.check_circle
+                          : Icons.cancel,
+                      color: _technicians[0]['status'] == 'Available'
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      onPressed: () {
+                        setState(() {
+                          _showAllTechnicians = true; // Show all technicians
+                        });
+                      },
+                    ),
+                  ),
+                  if (_showAllTechnicians) ...[
+                    for (var tech in _technicians
+                        .skip(1)) // Display remaining technicians
+                      ListTile(
+                        title: Text(tech['name']!),
+                        subtitle: Text(tech['status']!),
+                        leading: Icon(
+                          tech['status'] == 'Available'
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color: tech['status'] == 'Available'
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+
+            // New Maintenance Request Section
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  backgroundColor: Colors.blue, // Background color
+                ),
+                onPressed: () {
+                  _showRequestForm(context); // Show the request form
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add, size: 20, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('New Maintenance Request',
+                        style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Bookings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Categories',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: CircleAvatar(
+              backgroundImage: AssetImage('assets/img/profile.jpeg'),
+              radius: 12,
+            ),
+            label: 'Profile',
           ),
         ],
       ),
     );
   }
 
-  // Action Button Builder with Color Change
-  Widget _buildActionButton(
-      String title, IconData icon, VoidCallback onPressed) {
-    bool isActive = _quickActionStates[title] ?? false;
-
-    return Column(
-      children: [
-        FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _quickActionStates[title] = !isActive;
-            });
-            onPressed();
-          },
-          backgroundColor:
-              isActive ? Colors.green : Theme.of(context).colorScheme.primary,
-          child: Icon(icon),
-        ),
-        const SizedBox(height: 5),
-        Text(title),
-      ],
-    );
-  }
-
-  // Notifications Icon Button in AppBar opens this method
-  void _showNotifications() {
-    showDialog(
+  // Function to show notification drawer
+  void _showNotificationDrawer(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Recent Notifications'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: _buildRecentNotifications(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16),
+          height: 300, // Adjust height as needed
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Notifications',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              // Example notifications
+              Expanded(
+                child: ListView(
+                  children: [
+                    ListTile(
+                      leading: Icon(Icons.assignment, color: Colors.blue),
+                      title: Text('Task assigned: Ticket #152'),
+                      subtitle: Text('Assigned to John Doe at 10:00 AM'),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.assignment, color: Colors.blue),
+                      title: Text('Task completed: Ticket #141'),
+                      subtitle: Text('Completed by Jane Smith at 1:30 PM'),
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.assignment, color: Colors.blue),
+                      title: Text('New request submitted: Ticket #200'),
+                      subtitle: Text('Submitted by Space Dept. at 3:15 PM'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  // Recent Notifications
-  Widget _buildRecentNotifications() {
-    final List<Map<String, String>> notifications = [
-      {'message': 'Technician assigned to Task #152', 'time': '10 minutes ago'},
-      {'message': 'Task #141 has been completed', 'time': '1 hour ago'},
-      {
-        'message': 'New request submitted by Space Dept.',
-        'time': '3 hours ago'
-      },
-    ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: notifications.length,
-      itemBuilder: (context, index) {
-        final notification = notifications[index];
-        return ListTile(
-          leading: const Icon(Icons.notification_important, color: Colors.red),
-          title: Text(notification['message']!),
-          subtitle: Text(notification['time']!),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         );
       },
+    );
+  }
+
+  Widget _buildCategoryButton(String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (label == 'Pending Tasks') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PendingTasksPage(), // Navigate to PendingTasksPage
+                  ),
+                );
+              }
+            },
+            child: CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.blue.shade100,
+              child: Icon(icon, size: 30, color: Colors.blue),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(label, style: TextStyle(fontSize: 12)),
+        ],
+      ),
     );
   }
 }
