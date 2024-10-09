@@ -1,21 +1,20 @@
 // ignore_for_file: non_constant_identifier_names
 
 /*
- 
  USER PROFILE
 
- this is what the user profile should have in their profile
+ This is what the user profile should have in their profile
  __________________________________________________________________________________
 
- -uid
- -name
- -email
- -Username
- -Profile photo
- -bio
-
+ - uid
+ - name
+ - email
+ - username
+ - profile photo
+ - bio
  */
-// lets create the user profile class model
+
+// Let's create the user profile class model
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfile {
@@ -25,26 +24,30 @@ class UserProfile {
   final String username;
   final String bio;
 
-  UserProfile(
-      {required this.uid,
-      required this.name,
-      required this.email,
-      required this.username,
-      required this.bio});
+  UserProfile({
+    required this.uid,
+    required this.name,
+    required this.email,
+    required this.username,
+    required this.bio,
+  });
+
   /* firebase -> app
-     Convert firestore Document to user Profile(so that we can use in our app)
+     Convert firestore Document to UserProfile (so that we can use it in our app)
   */
-  factory UserProfile.fromdocument(DocumentSnapshot Doc) {
+  factory UserProfile.fromDocument(DocumentSnapshot doc) {
     return UserProfile(
-        uid: Doc["uid"],
-        name: Doc["name"],
-        email: Doc["email"],
-        username: Doc["username"],
-        bio: Doc["bio"]);
+      uid: doc["uid"],
+      name: doc["name"],
+      email: doc["email"],
+      username: doc["username"],
+      bio: doc["bio"] ?? '', // Default to empty string if bio is null
+    );
   }
+
   /*
   app -> firebase
-  Convert UserProfile To Map(so that we can store in firebase)
+  Convert UserProfile to Map (so that we can store it in firebase)
   */
   Map<String, dynamic> toMap() {
     return {
@@ -52,7 +55,7 @@ class UserProfile {
       'name': name,
       'email': email,
       'username': username,
-      'bio': bio
+      'bio': bio,
     };
   }
 }

@@ -5,28 +5,36 @@ import 'package:pro/services/database/database_service.dart';
 
 /*
    DATABASE PROVIDER
-   This provider is to separate the firestore data handling and UI of our App
+   This provider is to separate the Firestore data handling and UI of our App.
 
-   -the database service class handles data to and from firebase
-   -the database provider class processes the data to display in our app
+   - The DatabaseService class handles data to and from Firebase.
+   - The DatabaseProvider class processes the data to display in our app.
 
-   this make our code much more modular,easer and cleaner to read and test.
-  particularly as the number of page grow, we need this provider to properly manage
-  the different states of the app.
+   This makes our code much more modular, easier, and cleaner to read and test.
+   Particularly as the number of pages grow, we need this provider to properly manage
+   the different states of the app.
 
-  also, if one day we decide to change our backend(from firebase to something else )
-  then it is much easer to do manage and switch out different database.
+   Also, if one day we decide to change our backend (from Firebase to something else),
+   then it is much easier to manage and switch out different databases.
  */
 class DatabaseProvider extends ChangeNotifier {
   /*
   SERVICES
   */
-  //get the db & Auth service
-  final _Auth = AuthService();
-  final _db = DatabaseService();
+  // Get the Auth and Database services
+  final AuthService _authService = AuthService();
+  final DatabaseService _databaseService = DatabaseService();
+
   /*
   USER PROFILE
   */
-  //get user profile with given uid
-  Future<UserProfile?> userProfile(String uid) => _db.getUserFromFirebase(uid);
+  // Get user profile with the given uid
+  Future<UserProfile?> userProfile(String uid) =>
+      _databaseService.getUserFromFirebase(uid);
+
+  // New method to update user profile
+  Future<void> updateUserProfile(
+      String uid, String name, String email, String phone) {
+    return _databaseService.updateUserInFirebase(uid, name, email, phone);
+  }
 }

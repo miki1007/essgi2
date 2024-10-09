@@ -1,34 +1,7 @@
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
 class OverallEfficiencyPage extends StatelessWidget {
-  final List<charts.Series<TaskData, String>> _seriesPieData;
-
-  OverallEfficiencyPage({Key? key})
-      : _seriesPieData = _createSampleData(),
-        super(key: key);
-
-  // Mock data for pie chart
-  static List<charts.Series<TaskData, String>> _createSampleData() {
-    final data = [
-      TaskData('Completed', 35, Colors.green),
-      TaskData('Pending', 25, Colors.orange),
-      TaskData('Ongoing', 30, Colors.blue),
-      TaskData('Cancelled', 10, Colors.red),
-    ];
-
-    return [
-      charts.Series<TaskData, String>(
-        id: 'Efficiency',
-        domainFn: (TaskData task, _) => task.status,
-        measureFn: (TaskData task, _) => task.count,
-        colorFn: (TaskData task, _) =>
-            charts.ColorUtil.fromDartColor(task.color),
-        data: data,
-        labelAccessorFn: (TaskData row, _) => '${row.status}: ${row.count}%',
-      )
-    ];
-  }
+  OverallEfficiencyPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -68,47 +41,7 @@ class OverallEfficiencyPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      elevation: 8,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: charts.PieChart(
-                          _seriesPieData,
-                          animate: true,
-                          animationDuration: Duration(seconds: 2),
-                          behaviors: [
-                            charts.DatumLegend(
-                              position: charts.BehaviorPosition.end,
-                              horizontalFirst: false,
-                              desiredMaxColumns: 1,
-                              cellPadding:
-                                  EdgeInsets.only(right: 4.0, bottom: 4.0),
-                              entryTextStyle: charts.TextStyleSpec(
-                                color: charts.MaterialPalette.black,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                          defaultRenderer: charts.ArcRendererConfig(
-                            arcWidth: 100,
-                            arcRendererDecorators: [
-                              charts.ArcLabelDecorator(
-                                labelPosition: charts.ArcLabelPosition.inside,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
+                // Remove the PieChart
                 Expanded(
                   child: _buildEfficiencySummary(context),
                 ),
@@ -120,7 +53,7 @@ class OverallEfficiencyPage extends StatelessWidget {
     );
   }
 
-  // Custom summary of efficiency below the pie chart
+  // Custom summary of efficiency below the chart area
   Widget _buildEfficiencySummary(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -206,12 +139,4 @@ class OverallEfficiencyPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class TaskData {
-  final String status;
-  final int count;
-  final Color color;
-
-  TaskData(this.status, this.count, this.color);
 }

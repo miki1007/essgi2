@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pro/pages/bookings_page.dart';
+import 'package:pro/pages/chat_page.dart';
+import 'package:pro/pages/completed_tasks_page.dart';
+import 'package:pro/pages/ongoing_tasks_page.dart';
+import 'package:pro/pages/overall_efficiency_page.dart';
 import 'package:pro/pages/pending_tasks_page.dart';
+import 'package:pro/pages/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback toggleTheme;
@@ -11,6 +17,40 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index; // Update the selected index
+    });
+
+    switch (index) {
+      case 0:
+        // No navigation for Home as it's the same page
+        break;
+      case 1:
+        // Navigate to Bookings Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => BookingsPage()),
+        );
+        break;
+      case 2:
+        // Navigate to Chat Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ChatPage()),
+        );
+        break;
+      case 3:
+        // Navigate to Profile Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage(uid: '')),
+        );
+        break;
+    }
+  }
+
   // The ongoing image
   final String ongoingImage = 'assets/img/ongoing.jpeg';
 
@@ -487,6 +527,8 @@ class _HomePageState extends State<HomePage> {
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex, // Set the current index
+        onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -495,10 +537,6 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Categories',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
@@ -570,8 +608,51 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        PendingTasksPage(), // Navigate to PendingTasksPage
+                    builder: (context) => PendingTasksPage(),
+                  ),
+                );
+              } else if (label == 'Overall Efficiency') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OverallEfficiencyPage(),
+                  ),
+                );
+              } else if (label == 'Ongoing Tasks') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OngoingTasksPage(),
+                  ),
+                );
+              } else if (label == 'Completed Tasks') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CompletedTasksPage(),
+                  ),
+                );
+              } else if (label == 'Bookings') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookingsPage(),
+                  ),
+                );
+              } else if (label == 'Chat') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatPage(),
+                  ),
+                );
+              } else if (label == 'Profile') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfilePage(
+                      uid: '',
+                    ),
                   ),
                 );
               }

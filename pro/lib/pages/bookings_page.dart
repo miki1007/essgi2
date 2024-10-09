@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class OngoingTasksPage extends StatelessWidget {
+class BookingsPage extends StatelessWidget {
   final List<Map<String, String?>> tasks = [
     {
       "ticketNumber": "001",
-      "status": "Pending",
+      "status": "Completed",
       "dateTime": "2024-10-08 10:00 AM",
       "address": "Science Building",
       "technician": null,
-      "provider": "Mikias Bayle", // New Provider Field
+      "provider": "Mikias Bayle",
     },
     {
       "ticketNumber": "002",
@@ -18,15 +18,71 @@ class OngoingTasksPage extends StatelessWidget {
       "dateTime": "2024-10-07 09:30 AM",
       "address": "Laboratory Hall",
       "technician": null,
-      "provider": "Fikade Tibebe", // New Provider Field
+      "provider": "Fikade Tibebe",
     },
     {
       "ticketNumber": "003",
-      "status": "Pending",
+      "status": "Cancelled",
       "dateTime": "2024-10-09 02:00 PM",
       "address": "Library Wing",
       "technician": null,
-      "provider": "Bizuayew", // New Provider Field
+      "provider": "Bizuayew",
+    },
+    {
+      "ticketNumber": "004",
+      "status": "Completed",
+      "dateTime": "2024-10-06 11:00 AM",
+      "address": "Main Office",
+      "technician": null,
+      "provider": "Hana Abdi",
+    },
+    {
+      "ticketNumber": "005",
+      "status": "Pending",
+      "dateTime": "2024-10-05 03:00 PM",
+      "address": "Engineering Block",
+      "technician": null,
+      "provider": "Samuel Tesfaye",
+    },
+    {
+      "ticketNumber": "006",
+      "status": "Cancelled",
+      "dateTime": "2024-10-04 01:30 PM",
+      "address": "Administration Block",
+      "technician": null,
+      "provider": "Yared Zewdu",
+    },
+    {
+      "ticketNumber": "007",
+      "status": "Completed",
+      "dateTime": "2024-10-02 10:30 AM",
+      "address": "Cafeteria",
+      "technician": null,
+      "provider": "Marta Hayelom",
+    },
+    {
+      "ticketNumber": "008",
+      "status": "Pending",
+      "dateTime": "2024-10-03 12:00 PM",
+      "address": "Gymnasium",
+      "technician": null,
+      "provider": "Lydia Mulu",
+    },
+    {
+      "ticketNumber": "009",
+      "status": "Cancelled",
+      "dateTime": "2024-10-01 09:00 AM",
+      "address": "Parking Lot",
+      "technician": null,
+      "provider": "Kifle Assefa",
+    },
+    {
+      "ticketNumber": "010",
+      "status": "Completed",
+      "dateTime": "2024-09-30 08:00 AM",
+      "address": "IT Department",
+      "technician": null,
+      "provider": "Selam Tesfaye",
     },
   ];
 
@@ -36,7 +92,14 @@ class OngoingTasksPage extends StatelessWidget {
     final List<String> technicianNames = [
       "Mikias Bayle",
       "Fikade Tibebe",
-      "Bizuayew"
+      "Bizuayew",
+      "Hana Abdi",
+      "Samuel Tesfaye",
+      "Yared Zewdu",
+      "Marta Hayelom",
+      "Lydia Mulu",
+      "Kifle Assefa",
+      "Selam Tesfaye",
     ];
 
     // Assign random technician names
@@ -82,7 +145,9 @@ class OngoingTasksPage extends StatelessWidget {
 
               final statusColor = status == 'Pending'
                   ? Colors.orange
-                  : Colors.red; // Adjusted for only pending tasks
+                  : status == 'Cancelled'
+                      ? Colors.red
+                      : Colors.green;
 
               return InkWell(
                 onTap: () {
@@ -206,7 +271,9 @@ class TaskDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = status == 'Pending'
         ? Colors.orange
-        : Colors.red; // Adjusted for only pending tasks
+        : status == 'Cancelled'
+            ? Colors.red
+            : Colors.green;
 
     return Scaffold(
       appBar: AppBar(
