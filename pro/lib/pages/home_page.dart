@@ -10,7 +10,8 @@ import 'package:pro/pages/profile_page.dart';
 class HomePage extends StatefulWidget {
   final VoidCallback toggleTheme;
 
-  const HomePage({Key? key, required this.toggleTheme}) : super(key: key);
+  const HomePage({Key? key, required this.toggleTheme, required String uid})
+      : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -45,7 +46,11 @@ class _HomePageState extends State<HomePage> {
         // Navigate to Profile Page
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage(uid: '')),
+          MaterialPageRoute(
+              builder: (context) => ProfilePage(
+                    uid: '',
+                    toggleTheme: () {},
+                  )),
         );
         break;
     }
@@ -652,6 +657,7 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(
                     builder: (context) => ProfilePage(
                       uid: '',
+                      toggleTheme: () {},
                     ),
                   ),
                 );

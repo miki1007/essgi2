@@ -8,18 +8,17 @@ import '../component/my_text_field.dart';
 
 /*
     REGISTER PAGE
-    on this page user can fill the form and create an account. 
-    the data we want from the user is 
-    -name 
-    -email 
-    -password 
-    -confirm password 
+    On this page, the user can fill out the form and create an account. 
+    The data we want from the user is:
+    - Name 
+    - Email 
+    - Password 
+    - Confirm Password 
    _________________________________________________________ 
-   once the user successfully create an account ->the will be redirected to the home page. 
-
-   also if the user had an account, they go to the login page from here. 
-
+   Once the user successfully creates an account, they will be redirected to the home page. 
+   Also, if the user already has an account, they can go to the login page from here. 
  */
+
 class RegisterPage extends StatefulWidget {
   final void Function()? onTap;
   const RegisterPage({super.key, required this.onTap});
@@ -29,59 +28,67 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterState extends State<RegisterPage> {
-//access the auth & db service
+  // Access the auth & db service
   final _auth = AuthService();
   final _db = DatabaseService();
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController pwlController = TextEditingController();
+  final TextEditingController pwController = TextEditingController();
   final TextEditingController confirmPwController = TextEditingController();
-  // Register button Tap
+
+  // To toggle password visibility
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+
+  // Register button tap
   void register() async {
-    //password match -> create user
-    if (pwlController.text == confirmPwController.text) {
-      //attempt to register
+    // Check if passwords match
+    if (pwController.text == confirmPwController.text) {
+      // Attempt to register
       try {
-        //show loading circle
+        // Show loading circle
         showLoadingCircle(context);
-        //try to register
+        // Try to register
         await _auth.registerEmailPassword(
-            emailController.text, pwlController.text);
-        //finished loading...
+            emailController.text, pwController.text);
+
+        // Finished loading...
         if (mounted) hideLoadingCircle(context);
-        //once registered, create and save user profile in the database
+
+        // Once registered, create and save user profile in the database
         await _db.saveUserInfoInFirebase(
             name: nameController.text, email: emailController.text);
+
+        // Navigate to home page or another page after registration
       } catch (e) {
-        //finished loading...
-        if (mounted) {
-          hideLoadingCircle(context);
-        }
-        // let know the user couse of error
+        // Finished loading...
+        if (mounted) hideLoadingCircle(context);
+
+        // Show error dialog
         if (mounted) {
           showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                    title: Text(e.toString()),
-                  ));
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(e.toString()),
+            ),
+          );
         }
       }
-    }
-
-    //password don't match -> show error
-    else {
+    } else {
+      // Passwords don't match -> show error
       showDialog(
-          context: context,
-          builder: (context) =>
-              const AlertDialog(title: Text("password don't match")));
+        context: context,
+        builder: (context) =>
+            const AlertDialog(title: Text("Passwords don't match")),
+      );
     }
   }
 
-  //BUILD UI
+  // Build UI
   @override
   Widget build(BuildContext context) {
-    //SCAFFOLD
+    // Scaffold
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -92,80 +99,100 @@ class _RegisterState extends State<RegisterPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  //sized box
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  //logo
+                  // Sized box
+                  const SizedBox(height: 50),
+                  // Logo
                   Icon(
                     Icons.lock_open,
                     size: 75,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 50),
-                  //wellcome text
+                  // Welcome text
                   Text(
-                    "create an account",
+                    "Create an Account",
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  //name text field
+                  // Name text field
                   MyTextField(
-                      controller: nameController,
-                      hintText: "Enter name",
-                      obscuretext: false),
-                  const SizedBox(
-                    height: 10,
+                    controller: nameController,
+                    hintText: "Enter your name",
+                    obscureText: false,
                   ),
-                  //email text field
+                  const SizedBox(height: 10),
+                  // Email text field
                   MyTextField(
-                      controller: emailController,
-                      hintText: "Enter Email",
-                      obscuretext: false),
-                  const SizedBox(
-                    height: 10,
+                    controller: emailController,
+                    hintText: "Enter your email",
+                    obscureText: false,
                   ),
-                  //password text feild
+                  const SizedBox(height: 10),
+                  // Password text field with visibility toggle
                   MyTextField(
-                      controller: pwlController,
-                      hintText: "Enter your password",
-                      obscuretext: true),
-                  const SizedBox(
-                    height: 10,
+                    controller: pwController,
+                    hintText: "Enter your password",
+                    obscureText: !_isPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  //confirm password text feild
+                  const SizedBox(height: 10),
+                  // Confirm password text field with visibility toggle
                   MyTextField(
-                      controller: confirmPwController,
-                      hintText: "Comfirm your password",
-                      obscuretext: true),
-                  const SizedBox(
-                    height: 25,
+                    controller: confirmPwController,
+                    hintText: "Confirm your password",
+                    obscureText: !_isConfirmPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isConfirmPasswordVisible =
+                              !_isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-
-                  //sign in button
+                  const SizedBox(height: 25),
+                  // Register button
                   MyButton(text: "Register", onTap: register),
                   const SizedBox(height: 50),
-                  // Already a member ? Login
+                  // Already a member? Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Already a member",
+                        "Already a member?",
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.primary),
                       ),
-                      //user can tap this to go the login page
+                      // User can tap this to go to the login page
                       GestureDetector(
-                          onTap: widget.onTap,
-                          child: Text(
-                            " Login Now",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold),
-                          )),
+                        onTap: widget.onTap,
+                        child: Text(
+                          " Login Now",
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],

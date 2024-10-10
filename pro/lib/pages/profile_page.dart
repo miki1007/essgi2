@@ -10,32 +10,25 @@ import 'package:provider/provider.dart';
    This is a profile page for a given uid
  */
 class ProfilePage extends StatefulWidget {
-  //user id
   final String uid;
 
-  const ProfilePage({super.key, required this.uid});
+  const ProfilePage(
+      {super.key, required this.uid, required VoidCallback toggleTheme});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  //providers
   late final DatabaseProvider databaseProvider;
-
-  //user info
   UserProfile? user;
   String currentUserId = AuthService().getCurrentUid();
-
-  //loading
   bool _isLoading = true;
 
-  //controllers for text fields
+  // Text controllers
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
 
-  //on startup
   @override
   void initState() {
     super.initState();
@@ -44,43 +37,29 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> loadUser() async {
-    //get user profile info
-    user = await databaseProvider.userProfile(widget.uid);
-
-    //populate text fields with user data
-    if (user != null) {
-      _nameController.text = user!.name;
-      _emailController.text = user!.email;
+    try {
+      user = await databaseProvider.userProfile(widget.uid);
+      if (user != null) {
+        _nameController.text = user!.name;
+        _emailController.text = user!.email;
+      }
+    } catch (e) {
+      print('Error loading user: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-
-    //finished loading
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
-  // Update user profile method
-  Future<void> _updateProfile() async {
-    await databaseProvider.updateUserProfile(
-      currentUserId,
-      _nameController.text,
-      _emailController.text,
-      _phoneController.text,
-    );
-    loadUser(); // Reload user data after update
   }
 
   Future<void> _logout() async {
     await AuthService().logout();
-    Navigator.pushReplacementNamed(context, '/login'); // Adjust as necessary
+    Navigator.pushReplacementNamed(context, '/login'); // Use defined route
   }
 
-  //BUILD UI
   @override
   Widget build(BuildContext context) {
-    // SCAFFOLD
     return Scaffold(
-      // App Bar
       appBar: AppBar(
         title: Text(_isLoading || user == null ? 'Loading...' : 'Profile'),
         actions: [
@@ -94,15 +73,21 @@ class _ProfilePageState extends State<ProfilePage> {
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
-              child: ListView(
+              child: Column(
                 children: [
-                  // Profile Picture
+                  // Profile Picture and Edit Icon
                   Center(
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
                         CircleAvatar(
                           radius: 60,
+                          backgroundImage: user != null
+                              ? AssetImage(
+                                  'assets/profile_placeholder.png') // replace with actual image
+                              : null, // Show placeholder image or nothing
+                          child:
+                              user == null ? CircularProgressIndicator() : null,
                         ),
                         Positioned(
                           bottom: 0,
@@ -119,16 +104,43 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Editable Fields
-                  _buildTextField('Name', _nameController),
-                  _buildTextField('Email', _emailController),
-                  _buildTextField('Phone Number', _phoneController),
-                  const SizedBox(height: 20),
+                  // Name and Email Display with null checks
+                  if (user != null) ...[
+                    Text(
+                      user!.name,
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      user!.email,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ] else ...[
+                    const Text('Loading Name...'),
+                    const Text('Loading Email...'),
+                  ],
 
-                  // Update Button
-                  ElevatedButton(
-                    onPressed: _updateProfile,
-                    child: const Text('Update Profile'),
+                  const SizedBox(height: 30),
+
+                  // General Settings Buttons
+                  _buildSettingsButton(
+                    icon: Icons.support,
+                    label: 'Help & Support',
+                    onTap: () {
+                      // Navigate to Help & Support
+                    },
+                  ),
+                  _buildSettingsButton(
+                    icon: Icons.brightness_6,
+                    label: 'App Theme',
+                    onTap: () {
+                      // Implement theme change logic
+                    },
+                  ),
+                  _buildSettingsButton(
+                    icon: Icons.logout,
+                    label: 'Logout',
+                    onTap: _logout,
                   ),
                 ],
               ),
@@ -136,16 +148,16 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
-      ),
+  Widget _buildSettingsButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      trailing: const Icon(Icons.arrow_forward_ios),
+      onTap: onTap,
     );
   }
 }

@@ -6,6 +6,7 @@ class PendingTasksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine screen width for responsiveness
+    // ignore: unused_local_variable
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(

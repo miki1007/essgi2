@@ -71,8 +71,10 @@ class MyDrawer extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                ProfilePage(uid: _auth.getCurrentUid())));
+                            builder: (context) => ProfilePage(
+                                  uid: _auth.getCurrentUid(),
+                                  toggleTheme: () {},
+                                )));
                   }),
 
               //profile list tile

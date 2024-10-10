@@ -45,6 +45,9 @@ class UserProfile {
     );
   }
 
+  // Allow profilePictureUrl to be nullable
+  String? get profilePictureUrl => null;
+
   /*
   app -> firebase
   Convert UserProfile to Map (so that we can store it in firebase)

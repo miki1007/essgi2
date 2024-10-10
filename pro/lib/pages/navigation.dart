@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => HomePage(
               toggleTheme: () {},
+              uid: '',
             ), // Remove 'const'
         '/new-request': (context) => NewRequestPage(), // Remove 'const'
         '/history': (context) => HistoryPage(), // Remove 'const'

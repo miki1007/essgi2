@@ -22,6 +22,7 @@ class DatabaseProvider extends ChangeNotifier {
   SERVICES
   */
   // Get the Auth and Database services
+  // ignore: unused_field
   final AuthService _authService = AuthService();
   final DatabaseService _databaseService = DatabaseService();
 

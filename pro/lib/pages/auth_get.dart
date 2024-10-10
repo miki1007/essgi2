@@ -26,7 +26,9 @@ class AuthGet extends StatelessWidget {
             // User is logged in
             if (snapshot.hasData) {
               return HomePage(
-                  toggleTheme: toggleTheme); // Pass toggleTheme here
+                toggleTheme: toggleTheme,
+                uid: '',
+              ); // Pass toggleTheme here
             }
             // User is not logged in
             else {

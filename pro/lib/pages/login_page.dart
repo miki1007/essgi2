@@ -1,22 +1,10 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:pro/component/my_button.dart';
 import 'package:pro/component/my_loading_circle.dart';
 import 'package:pro/component/my_text_field.dart';
+import 'package:pro/services/Auth/auth_get.dart';
 import 'package:pro/services/Auth/auth_services.dart';
 
-/*
-   Login page
-
-   on this page an existing user can login with
-      -eamil
-      -password
-  _____________________________________________________
-  one the user login successfully the redirect to the home page
-
-  if doesnt any account the redirected to the register page
- */
 class LoginPage extends StatefulWidget {
   final void Function()? onTap;
   const LoginPage({super.key, required this.onTap});
@@ -26,38 +14,46 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  //access the auth service
   final _auth = AuthService();
-  //Text controller
   final TextEditingController emailController = TextEditingController();
   final TextEditingController pwController = TextEditingController();
-  //login methed
+  bool _isPasswordVisible = false; // To toggle password visibility
+
   void login() async {
-    //try to login
     try {
-      //loading page at the begging
       showLoadingCircle(context);
-      //try to login
       await _auth.loginEmailPassword(emailController.text, pwController.text);
-      //loading finished
-      if (mounted) {
-        hideLoadingCircle(context);
-      }
+
+      if (!mounted) return; // Check if the widget is still mounted
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AuthGet(toggleTheme: () {}),
+        ),
+      );
     } catch (e) {
-      if (mounted) {
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  title: Text(e.toString()),
-                ));
-      }
+      if (!mounted) return; // Check if the widget is still mounted
+
+      hideLoadingCircle(context);
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(e.toString()),
+        ),
+      );
     }
   }
 
-  //BUID UI
+  @override
+  void dispose() {
+    emailController.dispose();
+    pwController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    //SCAFFOLD
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
@@ -68,81 +64,84 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/img/login_img.jpg'),
-                  //sized box
-                  SizedBox(
-                    height: 50,
+                  // Adjust image size
+                  Image.asset(
+                    'assets/img/login_img.jpg',
+                    height: 200, // Adjust the height to fit the screen
                   ),
-                  //logo
+                  const SizedBox(height: 15),
                   Icon(
                     Icons.lock_open,
                     size: 75,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  SizedBox(height: 50),
-                  //create an account
+                  const SizedBox(height: 50),
                   Text(
-                    "Wellcome to ESSGI",
+                    "Welcome to ESSGI",
                     style: TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  //email text field
+                  const SizedBox(height: 20),
                   MyTextField(
-                      controller: emailController,
-                      hintText: "Enter Email",
-                      obscuretext: false),
-
-                  const SizedBox(
-                    height: 20,
+                    controller: emailController,
+                    hintText: "Enter Email",
+                    obscureText: false,
                   ),
-                  //password text feild
-                  MyTextField(
-                      controller: pwController,
-                      hintText: "Enter your password",
-                      obscuretext: true),
-                  const SizedBox(
-                    height: 25,
+                  const SizedBox(height: 20),
+                  // Password field with visibility toggle
+                  TextField(
+                    controller: pwController,
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your password',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                  //forget password
+                  const SizedBox(height: 25),
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      'Forgot Password',
+                      'Forgot Password?',
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold),
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  //sign in button
+                  const SizedBox(height: 10),
                   MyButton(text: "Login", onTap: login),
                   const SizedBox(height: 50),
-                  // not register ? register now
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "I don't  ahve an account?",
+                        "Don't have an account?",
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.primary),
                       ),
-                      //user can tap this to go the register page
                       GestureDetector(
-                          onTap: widget.onTap,
-                          child: Text(
-                            " Register Now",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold),
-                          )),
+                        onTap: widget.onTap,
+                        child: Text(
+                          " Register Now",
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
                   ),
                 ],

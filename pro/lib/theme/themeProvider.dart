@@ -7,34 +7,32 @@ import 'package:pro/theme/dark_mode.dart';
 /*
 
 THEME PROVIDER
-this helps us to change from light and dark mode
+This helps us to change from light and dark mode.
 
- */
+*/
 class Themeprovider with ChangeNotifier {
-  //initially set the light mode
+  // Initially set the light mode
   ThemeData _themeData = lightMode;
 
-  //get the current theme
+  // Get the current theme
   ThemeData get themeData => _themeData;
 
-  // is it dark mode
-  bool get isDarMode => _themeData == darkMode;
+  // Check if it's dark mode
+  bool get isDarkMode => _themeData == darkMode;
 
-  get isDarkTheme => null;
-
-  // set the themedata
+  // Set the theme data
   set themeData(ThemeData themeData) {
     _themeData = themeData;
-    //update the UI
+    // Update the UI
     notifyListeners();
   }
 
-  //toggle between dark and light mode
+  // Toggle between dark and light mode
   void toggleTheme() {
     if (_themeData == lightMode) {
-      themeData = darkMode;
+      themeData = darkMode; // Set to dark mode
     } else {
-      themeData = lightMode;
+      themeData = lightMode; // Set to light mode
     }
   }
 }
